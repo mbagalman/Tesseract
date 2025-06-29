@@ -13,7 +13,7 @@ Ever wanted to rotate a hypercube like a god? This interactive Python project le
 
 Don’t feel like installing anything? Just click the badge below and run the notebook in your browser:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mbagalman/tesseract-visualizer/HEAD?filepath=tesseract_visualizer.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mbagalman/tesseract-visualizer/main?filepath=tesseract_visualizer.ipynb)
 
 ## 🧹 Installation (for mortals)
 
