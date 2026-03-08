@@ -20,8 +20,8 @@ Don’t feel like installing anything? Just click the badge below and run the no
 If you want to run this locally:
 
 ```bash
-git clone https://github.com/mbagalman/tesseract-visualizer.git
-cd tesseract-visualizer
+git clone https://github.com/mbagalman/Tesseract.git
+cd Tesseract
 pip install -r requirements.txt
 jupyter notebook
 ```
@@ -35,6 +35,32 @@ Then open `tesseract_visualizer.ipynb` and rotate to your heart’s content.
 * `ipywidgets`
 
 All safely specified in `requirements.txt`.
+
+## 🔒 Reproducible Environments
+
+For pinned installs:
+
+```bash
+# Runtime only
+pip install -r requirements.lock.txt
+
+# Runtime + dev tooling (tests/lint)
+pip install -r requirements-dev.lock.txt
+```
+
+To refresh lock files after dependency updates:
+
+```bash
+# Refresh runtime lock
+python3 -m venv /tmp/tesseract-lock
+/tmp/tesseract-lock/bin/pip install -r requirements.txt
+/tmp/tesseract-lock/bin/pip freeze > requirements.lock.txt
+
+# Refresh dev lock
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pip freeze > requirements-dev.lock.txt
+```
 
 ## 💡 Why?
 

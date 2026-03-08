@@ -1,0 +1,30 @@
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test and coverage outputs
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build/distribution outputs
+build/
+dist/
+*.egg-info/
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/

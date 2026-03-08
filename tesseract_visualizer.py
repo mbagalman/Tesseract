@@ -12,11 +12,12 @@ License: MIT
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from matplotlib.lines import Line2D
 from itertools import product
-from typing import List, Tuple, Optional, Dict
+from numbers import Integral
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 # Try to import ipywidgets so we can run interactively in notebooks.
 # If not, we fall back to boring-but-functional static mode.
@@ -34,6 +35,37 @@ AXIS_LABELS = ['X', 'Y', 'Z', 'W']  # Because you deserve to know who's who
 
 # --- Core Geometric Functions ---
 
+def _validate_axis_index(axis: int, name: str) -> int:
+    if not isinstance(axis, Integral):
+        raise ValueError(f"{name} must be an integer in [0, 3], got {axis!r}.")
+    axis_int = int(axis)
+    if axis_int < 0 or axis_int > 3:
+        raise ValueError(f"{name} must be in [0, 3], got {axis_int}.")
+    return axis_int
+
+def _validate_finite_number(value: float, name: str, *, positive: bool = False) -> float:
+    try:
+        value_float = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a finite number, got {value!r}.") from exc
+    if not np.isfinite(value_float):
+        raise ValueError(f"{name} must be finite, got {value!r}.")
+    if positive and value_float <= 0:
+        raise ValueError(f"{name} must be > 0, got {value_float}.")
+    return value_float
+
+def _require_matplotlib():
+    try:
+        import matplotlib.pyplot as plt
+        from matplotlib.lines import Line2D
+        from mpl_toolkits.mplot3d.art3d import Line3DCollection
+    except ImportError as exc:
+        raise ImportError(
+            "matplotlib is required for plotting. Install dependencies with "
+            "`pip install -r requirements.txt`."
+        ) from exc
+    return plt, Line2D, Line3DCollection
+
 def generate_hypercube_vertices() -> np.ndarray:
     return np.array(list(product([-0.5, 0.5], repeat=4)))
 
@@ -47,6 +79,12 @@ def generate_hypercube_edges(vertices: np.ndarray) -> List[Tuple[int, int]]:
     return edges
 
 def rotation_matrix_4d(axis1: int, axis2: int, angle_rad: float) -> np.ndarray:
+    axis1 = _validate_axis_index(axis1, "axis1")
+    axis2 = _validate_axis_index(axis2, "axis2")
+    if axis1 == axis2:
+        raise ValueError("axis1 and axis2 must be different.")
+    angle_rad = _validate_finite_number(angle_rad, "angle_rad")
+
     M = np.eye(4)
     c, s = np.cos(angle_rad), np.sin(angle_rad)
     M[axis1, axis1] = c
@@ -56,9 +94,16 @@ def rotation_matrix_4d(axis1: int, axis2: int, angle_rad: float) -> np.ndarray:
     return M
 
 def project_4d_to_3d(points4d: np.ndarray, viewer_distance: float = 3.0) -> np.ndarray:
+    points4d = np.asarray(points4d, dtype=float)
+    if points4d.ndim != 2 or points4d.shape[1] != 4:
+        raise ValueError(f"points4d must have shape (n, 4), got {points4d.shape}.")
+    viewer_distance = _validate_finite_number(viewer_distance, "viewer_distance", positive=True)
+
     w = points4d[:, 3]
     denom = viewer_distance - w
-    denom = np.where(np.abs(denom) < EPSILON, EPSILON, denom)
+    near_plane = np.abs(denom) < EPSILON
+    denom = np.where(near_plane & (denom < 0), -EPSILON, denom)
+    denom = np.where(near_plane & (denom >= 0), EPSILON, denom)
     factor = viewer_distance / denom
     return points4d[:, :3] * factor[:, np.newaxis]
 
@@ -78,7 +123,19 @@ def plot_tesseract(
     rot_zw: float = 0,
     viewer_distance: float = 3.0,
     show_plot: bool = True
-) -> Optional[plt.Figure]:
+) -> Optional["Figure"]:
+    for name, angle in (
+        ("rot_xy", rot_xy),
+        ("rot_xz", rot_xz),
+        ("rot_xw", rot_xw),
+        ("rot_yz", rot_yz),
+        ("rot_yw", rot_yw),
+        ("rot_zw", rot_zw),
+    ):
+        _validate_finite_number(angle, name)
+    viewer_distance = _validate_finite_number(viewer_distance, "viewer_distance", positive=True)
+    plt, Line2D, Line3DCollection = _require_matplotlib()
+
     verts = generate_hypercube_vertices()
     edges = generate_hypercube_edges(verts)
 
@@ -170,6 +227,7 @@ def is_jupyter_environment() -> bool:
         return False
 
 def demo_rotation_sequence():
+    _require_matplotlib()
     print("\nStatic demo of tesseract rotation...")
     plot_tesseract(
         rot_xy=np.pi/7,
