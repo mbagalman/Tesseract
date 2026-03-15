@@ -2,6 +2,12 @@
 
 Ever wanted to rotate a hypercube like a god? This interactive Python project lets you explore the 4th dimension without collapsing into a singularity.
 
+## Note
+
+This project has been superseded by [4D-Tesseractinator](https://github.com/mbagalman/4D-Tesseractinator), which is the active and improved version of this work.
+
+I'm keeping this earlier project publicly available in case it is useful to anyone, but new development is happening in the newer repository.
+
 ## 🔭 What It Does
 
 * Projects a 4D hypercube (a tesseract) into 3D space, and then into 2D
